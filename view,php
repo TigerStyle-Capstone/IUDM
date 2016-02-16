@@ -1,78 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Committee Connnect Users!</title>
+</head>
+<body>
+
 <?php
 /* 
- NEW.PHP
- Allows user to create a new entry in the database
+	VIEW.PHP
+	Displays all data from 'players' table
 */
- 
- // creates the new record form
- // since this form is used multiple times in this file, I have made it a function that is easily reusable
- function view($first, $last, $email, $error)
- {
- ?>
- <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
- <html>
- <head>
- <title>New User</title>
- </head>
- <body>
- <?php 
- // if there are any errors, display them
- if ($error != '')
- {
- echo '<div style="padding:4px; border:1px solid red; color:red;">'.$error.'</div>';
- }
- ?> 
- 
- <form action="" method="post">
- <div>
- <strong>First Name: *</strong> <input type="text" name="firstname" value="<?php echo $first; ?>" /><br/>
- <strong>Last Name: *</strong> <input type="text" name="lastname" value="<?php echo $last; ?>" /><br/>
- <strong>Email: *</strong> <input type="text" name="email" value="<?php echo $email; ?>" /><br/>
- <p>* required</p>
- <input type="submit" name="submit" value="Submit">
- </div>
- </form> 
- </body>
- </html>
- <?php 
- }
- 
- 
- // connect to the database
- include('connect-db.php');
- 
- // check if the form has been submitted. If it has, start to process the form and save it to the database
- if (isset($_POST['submit']))
- { 
- // get form data, making sure it is valid
- $firstname = mysqli_real_escape_string($connection, $_POST['firstname']);
- $lastname = mysqli_real_escape_string($connection, $_POST['lastname']);
- $email = mysqli_real_escape_string($connection, $_POST['email']);
- 
- // check to make sure both fields are entered
- if ($firstname == '' || $lastname == '' || $email == '')
- {
- // generate error message
- $error = 'ERROR: Please fill in all required fields!';
- 
- // if either field is blank, display the form again
- view($firstname, $lastname, $email, $error);
- }
- else
- {
- // save the data to the database
- mysqli_query($connection, "INSERT users SET first_name='$firstname', last_name='$lastname', email='$email'");
- 
- 
- // once saved, redirect back to the view page
- header("Location: view.php"); 
- }
- }
- else
- // if the form hasn't been submitted, display the form
- {
- view('','','','');
- }
- 
- mysqli_close($connection);
+
+	// connect to the database
+	include('connect-db.php');
+
+	// get results from database
+	$query = "SELECT * FROM users";
+	$result = mysqli_query($connection, $query);
+	if (!$result){
+		die("Database query failed.");
+	}
+		
+	// display data in table
+	echo "<p><b>View All</b></p>";
+	
+	echo "<table border='1' cellpadding='10'>";
+	echo "<tr> <th>ID</th> <th>First Name</th> <th>Last Name</th> <th>Email</th> <th></th></tr>";
+
+	// loop through results of database query, displaying them in the table
+	while($row = mysqli_fetch_assoc($result)) {
+		
+		// echo out the contents of each row into a table
+		echo "<tr>";
+		echo '<td>' . $row['id'] . '</td>';
+		echo '<td>' . $row['first_name'] . '</td>';
+		echo '<td>' . $row['last_name'] . '</td>';
+		echo '<td>' . $row['email'] . '</td>';
+		echo '<td><a href="edit.php?id=' . $row['id'] . '">Edit</a></td>';
+		echo '<td><a href="delete.php?id=' . $row['id'] . '">Delete</a></td>';
+		echo "</tr>"; 
+	} 
+
+	// close table>
+	echo "</table>";
+	
+	mysqli_free_result($result);
+	mysqli_close($connection);
 ?>
+<p><a href="new.php">Add a new record</a></p>
+<p><a href="search.php">Search for a user</a></p>
+
+</body>
+</html>	
